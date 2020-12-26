@@ -2,6 +2,8 @@ import socket
 from _thread import *
 from sys import argv
 import codecs
+from sys import argv, getsizeof
+import random, string
 
 valid_methods = ['POST', 'UPDATE', 'DELETE', 'HEAD', 'PUT', 'PATCH']
 
@@ -28,20 +30,19 @@ def create_html(filename, size):
 
 
 def multi_threaded_client(connection):
-    connection.send(str.encode('Server is working:'))
-    response = ""
     while True:
-
         request = connection.recv(2048)
+        if not request:
+            break
         request = request.decode('utf-8')
-        split_words = str(request).split()
-        method = split_words[0]
-        size = split_words[1].replace("/", "")
+        split_words = request.split("\n")
+        method = split_words[0].split()[0]
+        size = split_words[0].split()[1].replace("/", "")
 
         if method == 'GET' and size.isdigit():
             size = int(size)
             if 100 <= size <= 20000:
-                filename = str(size) + ".html"
+                filename = "index.html"
                 create_html(filename, size)
                 file_input = open(filename)
                 content = file_input.read()
@@ -51,16 +52,17 @@ def multi_threaded_client(connection):
                 response += str('HTTP/1.0 200 OK\r\n')
                 response += str('Content-Length: ' + str(size) + '\r\n')
                 response += str('Content-Type: text/html; charset=UTF-8' + '\r\n\r\n')
-                response += "http://localhost:8080/" + filename
-
+                client.sendall(response.encode())
+                response = content
+                response_bytes = response.encode()
+                client.sendall(response_bytes)
         else:
             if method in valid_methods:
                 response = str('HTTP/1.0 501 Not Implemented \r\n')
+                client.sendall(response.encode())
             else:
                 response = str('HTTP/1.0 400 Bad Request \r\n')
-        if not request:
-            break
-        client.sendall(response.encode())
+                client.sendall(response.encode())
     connection.close()
 
 
