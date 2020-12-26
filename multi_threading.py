@@ -1,47 +1,66 @@
 import socket
 from _thread import *
 from sys import argv
+import codecs
 
 valid_methods = ['POST', 'UPDATE', 'DELETE', 'HEAD', 'PUT', 'PATCH']
+
+
+def write_message(size):
+    str = "a"
+    for i in range(size - 50):
+        str = str + "a"
+    return str
 
 
 def create_html(filename, size):
     file = open(filename, 'w')
 
-    message = """
-    <html>
-        <head></head>
-        <body><p>Hello World!</p></body>
-    </html>"""
+    message = """<HTML>
+<HEAD>
+<TITLE>I am """ + str(size) + """ bytes long</TITLE>
+</HEAD>
+<BODY>""" + str(write_message(size)) + """</BODY>
+</HTML>"""
 
     file.write(message)
     file.close()
 
-    return filename
-
 
 def multi_threaded_client(connection):
     connection.send(str.encode('Server is working:'))
+    response = ""
     while True:
 
         request = connection.recv(2048)
         request = request.decode('utf-8')
         split_words = str(request).split()
         method = split_words[0]
-        size = int(split_words[1].replace("/", ""))
+        size = split_words[1].replace("/", "")
 
-        if method == 'GET' and 100 <= size <= 20000:
-            filename = str(size) + ".html"
-            response = "http://localhost:8080/" + str(create_html(filename, size))
+        if method == 'GET' and size.isdigit():
+            size = int(size)
+            if 100 <= size <= 20000:
+                filename = str(size) + ".html"
+                create_html(filename, size)
+                file_input = open(filename)
+                content = file_input.read()
+                file_input.close()
+
+                response = ""
+                response += str('HTTP/1.0 200 OK\r\n')
+                response += str('Content-Length: ' + str(size) + '\r\n')
+                response += str('Content-Type: text/html; charset=UTF-8' + '\r\n\r\n')
+                response += "http://localhost:8080/" + filename
+
         else:
             if method in valid_methods:
-                response = 'Not Implemented (501)'
+                response = str('HTTP/1.0 501 Not Implemented \r\n')
             else:
-                response = 'Bad Request (400)'
-
+                response = str('HTTP/1.0 400 Bad Request \r\n')
         if not request:
             break
-        connection.sendall(str.encode(response))
+        client.sendall(response.encode())
     connection.close()
 
 
