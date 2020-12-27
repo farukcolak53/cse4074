@@ -14,10 +14,12 @@ def write_message(size):
         str = str + "a"
     return str
 
+
 def random_string(string_length):
     """Generate a random string of fixed length """
     letters = string.ascii_lowercase
     return ''.join(random.choice(letters) for i in range(string_length))
+
 
 def create_html(size):
     index_file = open("./index.html", 'w+')
@@ -48,7 +50,7 @@ def multi_threaded_client(connection):
             if 100 <= size <= 20000:
                 filename = "/index.html"
                 create_html(size)
-                file_input = open("."+filename)
+                file_input = open("." + filename)
                 content = file_input.read()
                 file_input.close()
                 response = ""
@@ -61,34 +63,46 @@ def multi_threaded_client(connection):
                 response_bytes = response.encode()
                 client.sendall(response_bytes)
             else:
+                filename = "400.html"
+                file_input = open(filename)
+                content = file_input.read()
+                file_input.close()
                 response = ""
                 response += str('HTTP/1.0 400 Bad Request\r\n')
-                response += str('Content-Length: ' + str(len("")) + '\r\n')
+                response += str('Content-Length: ' + str(len(content)) + '\r\n')
                 response += str('Content-Type: text/html; charset=UTF-8' + '\r\n\r\n')
                 print(response)
                 client.sendall(response.encode())
-                response = "" # TODO : açıklama ekle
+                response = content
                 response_bytes = response.encode()
                 client.sendall(response_bytes)
         else:
             if method in valid_methods:
+                filename = "501.html"
+                file_input = open(filename)
+                content = file_input.read()
+                file_input.close()
                 response = ""
                 response += str('HTTP/1.0 501 Not Implemented\r\n')
-                response += str('Content-Length: ' + str(len("")) + '\r\n')
+                response += str('Content-Length: ' + str(len(content)) + '\r\n')
                 response += str('Content-Type: text/html; charset=UTF-8' + '\r\n\r\n')
                 print(response)
                 client.sendall(response.encode())
-                response = ""   # TODO : açıklama ekle
+                response = content
                 response_bytes = response.encode()
                 client.sendall(response_bytes)
             else:
+                filename = "400.html"
+                file_input = open(filename)
+                content = file_input.read()
+                file_input.close()
                 response = ""
                 response += str('HTTP/1.0 400 Bad Request\r\n')
-                response += str('Content-Length: ' + str(len("")) + '\r\n')
+                response += str('Content-Length: ' + str(len(content)) + '\r\n')
                 response += str('Content-Type: text/html; charset=UTF-8' + '\r\n\r\n')
                 print(response)
                 client.sendall(response.encode())
-                response = ""   # TODO : açıklama ekle
+                response = content
                 response_bytes = response.encode()
                 client.sendall(response_bytes)
         print("-------------------------------------")
