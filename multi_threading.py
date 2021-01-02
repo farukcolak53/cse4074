@@ -54,7 +54,7 @@ except socket.error as e:
 
 print('Server socket is listening..')
 
-server_socket.listen(5)
+server_socket.listen(5)  # TODO: what is ?
 
 while True:
     client, address = server_socket.accept()

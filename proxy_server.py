@@ -14,30 +14,45 @@ def proxy_thread(connection):
     request = request.decode('utf-8')
     request_split = request.split("\n")
 
-    if ":" in request_split[0]:
+    if "favicon.ico" in request_split[0]:
+        return
+
+    if "localhost" in request_split[0]:
         method = request_split[0].split()[0]
-        if method != 'GET':
-            return
+        # if method != 'GET':
+        #     return
         print("----------------------------")
         print("---------Request------------")
         print(request)
         print("----------------------------")
+        hostname = "localhost"
         server_port = request_split[0].split("/")[2].split(":")[1]
         size = request_split[0].split("/")[3].split()[0]
         url = "/" + size
         request_split[0] = method + " " + url + " HTTP/1.1"
     else:
+
+        # any web server
         method = request_split[0].split()[0]
-        server_port = "8080"
-        size = request_split[0].split()[1][1:]
-        url = "/" + size
-        request_split[0] = method + " " + url + " HTTP/1.1"
+        print("\n" + str(request_split[0]))
+        print("---")
+        hostname = request_split[0].split()[1].split(":")[0]
+        server_port = request_split[0].split()[1].split(":")[1]
+        size = "0"  # default
+
+        # default web server
+        # if False:
+        #     method = request_split[0].split()[0]
+        #     server_port = "8080"
+        #     size = request_split[0].split()[1][1:]
+        #     url = "/" + size
+        #     request_split[0] = method + " " + url + " HTTP/1.1"
     # print(method, server_port, size, url)
 
     try:
         # create a socket to connect to the web server
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        s.connect(("localhost", int(server_port)))
+        s.connect((hostname, int(server_port)))
 
         if int(size) > 9999:
             filename = "414.html"
@@ -49,6 +64,7 @@ def proxy_thread(connection):
         while True:
             # receive data from web server
             data = s.recv(9999)
+            # print(data.decode('utf-8'))
             if not data:
                 break
             connection.send(data)
