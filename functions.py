@@ -1,5 +1,5 @@
 # Functions class
-
+import os
 from sys import getsizeof
 
 
@@ -11,7 +11,8 @@ def write_message(size):
 
 
 def create_requested_document(size):
-    index_file = open("./index.html", 'w+')
+    completeName = os.path.join("files/", str(size) + ".html")
+    index_file = open(completeName, "w+")
     body_text = str(write_message(size))
     content = "<html>\n<head>\n"
     content += "<title> I am " + str(size) + " bytes</title>\n</head>\n<body>\n<p>"
@@ -21,10 +22,11 @@ def create_requested_document(size):
     return index_file
 
 
-def generate_response_html(filename, connection):
+def generate_response_html(filename, connection, size):
     response = ""
-    if filename == '/index.html':
-        file_input = open("." + filename)
+    if filename == 'files/' + str(size) + '.html':
+        print(filename)
+        file_input = open(filename)
         content = file_input.read()
         response += str('HTTP/1.0 200 OK\r\n')
     elif filename == '400.html':

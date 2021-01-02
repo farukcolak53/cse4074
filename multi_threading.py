@@ -11,32 +11,33 @@ valid_methods = ['POST', 'UPDATE', 'DELETE', 'HEAD', 'PUT', 'PATCH']
 def multi_threaded_client(connection):
     req = connection.recv(1024)  # 10240  byte request received
     request = req.decode('utf-8')
-    split_words = request.split("\n")
-    method = split_words[0].split()[0]
-    size = split_words[0].split()[1].replace("/", "")
+    if request:
+        split_words = request.split("\n")
+        method = split_words[0].split()[0]
+        size = split_words[0].split()[1].replace("/", "")
 
-    print("----------------------------")
-    print("---------Request------------")
-    print(request)
-    print("----------------------------")
+        print("----------------------------")
+        print("---------Request------------")
+        print(request)
+        print("----------------------------")
 
-    if method == 'GET' and size.isdigit():
-        size = int(size)
-        if 100 <= size <= 20000:
-            filename = "/index.html"
-            functions.create_requested_document(size)
-            functions.generate_response_html(filename, connection)
+        if method == 'GET' and size.isdigit():
+            size = int(size)
+            if 100 <= size <= 20000:
+                filename = "files/" + str(size) + ".html"
+                functions.create_requested_document(size)
+                functions.generate_response_html(filename, connection, size)
+            else:
+                filename = "400.html"
+                functions.generate_response_html(filename, connection, 0)
         else:
-            filename = "400.html"
-            functions.generate_response_html(filename, connection)
-    else:
-        if method in valid_methods:
-            filename = "501.html"
-            functions.generate_response_html(filename, connection)
-        else:
-            filename = "400.html"
-            functions.generate_response_html(filename, connection)
-    print("-------------------------------------")
+            if method in valid_methods:
+                filename = "501.html"
+                functions.generate_response_html(filename, connection, 0)
+            else:
+                filename = "400.html"
+                functions.generate_response_html(filename, connection, 0)
+        print("-------------------------------------")
 
     lock.release()  # thread unlocked
     connection.close()  # connection closed
@@ -44,7 +45,7 @@ def multi_threaded_client(connection):
 
 server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-host = '0.0.0.0'
+host = '127.0.0.1'
 # port = int(argv[1])
 port = 8080
 

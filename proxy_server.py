@@ -1,3 +1,4 @@
+import os
 import socket
 from _thread import *
 import functions
@@ -16,7 +17,7 @@ def proxy_thread(connection):
     if "favicon.ico" in request_split[0]:
         return
 
-    if "localhost" in request_split[0]:
+    if "localhost" in request_split[0] or '127.0.0.1' in request_split[0]:
         method = request_split[0].split()[0]
         # if method != 'GET':
         #     return
@@ -51,12 +52,31 @@ def proxy_thread(connection):
             return
         request = ("\r\n".join(request_split) + "\r\n\r\n").encode()
         print(request.decode('utf-8'))
+
+        my_path = "files" + request.decode('utf-8').split("\n")[0].split()[1]
+        print("burada")
+        print(my_path)
+        with open('cache.txt') as f:
+            if my_path in f.read():
+                print("nerede")
+                file_input = open(my_path)
+                data = file_input.read()
+                print(data)
+                connection.sendall(data.encode())
+                connection.close()
+                return
+        print("şurada")
         s.send(request)  # send request to web server
-        # print(request)
         while True:
+            print("orada")
             # receive data from web server
             data = s.recv(9999)
-            # print(data.decode('utf-8'))
+            data_decoded_split = data.decode('utf-8').split("\n")
+            if 'HTTP/1.0 200 OK' in data_decoded_split[0]:
+                cache_file = open('cache.txt', 'a')
+                filepath = "files/" + data_decoded_split[1].split()[1]
+                cache_file.write(filepath + "\n")
+                cache_file.close()
             if not data:
                 break
             connection.send(data)
@@ -66,7 +86,8 @@ def proxy_thread(connection):
         if s:
             s.close()
         filename = "404.html"
-        functions.generate_response_html(filename, connection)
+        print("patladı")
+        functions.generate_response_html(filename, connection, 0)
         return
 
 
