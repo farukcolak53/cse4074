@@ -1,6 +1,5 @@
 import socket
 from _thread import *
-import sys
 import functions
 
 
@@ -27,27 +26,19 @@ def proxy_thread(connection):
         print("----------------------------")
         hostname = "localhost"
         server_port = request_split[0].split("/")[2].split(":")[1]
+        if server_port == '8080' or server_port == '8888':
+            server_port = '8080'
+        else:
+            return
         size = request_split[0].split("/")[3].split()[0]
         url = "/" + size
         request_split[0] = method + " " + url + " HTTP/1.1"
     else:
-
         # any web server
         method = request_split[0].split()[0]
-        print("\n" + str(request_split[0]))
-        print("---")
         hostname = request_split[0].split()[1].split(":")[0]
         server_port = request_split[0].split()[1].split(":")[1]
         size = "0"  # default
-
-        # default web server
-        # if False:
-        #     method = request_split[0].split()[0]
-        #     server_port = "8080"
-        #     size = request_split[0].split()[1][1:]
-        #     url = "/" + size
-        #     request_split[0] = method + " " + url + " HTTP/1.1"
-    # print(method, server_port, size, url)
 
     try:
         # create a socket to connect to the web server
@@ -59,6 +50,7 @@ def proxy_thread(connection):
             functions.generate_response_html(filename, connection)
             return
         request = ("\r\n".join(request_split) + "\r\n\r\n").encode()
+        print(request.decode('utf-8'))
         s.send(request)  # send request to web server
         # print(request)
         while True:
