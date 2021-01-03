@@ -34,7 +34,7 @@ def proxy_thread(connection):
         request_split[0] = method + " " + url + " HTTP/1.1"
     else:
         # Any other web server
-        hostname = request_split[0].split()[1].split(":")[0]  # Parses the hostname such as marmara.edu.tr
+        hostname = request_split[0].split()[1].split(":")[0][4:]  # Parses the hostname such as marmara.edu.tr
         server_port = request_split[0].split()[1].split(":")[1]  # Parses the server port
         size = "0"  # default
 
@@ -49,7 +49,10 @@ def proxy_thread(connection):
             return
         if hostname is 'localhost':
             request = ("\r\n".join(request_split) + "\r\n\r\n").encode()
-        print(request.decode('utf-8'))
+            print(request.decode('utf-8'))
+        else:
+            print(request)
+            request = request.encode()
 
         # cache
         my_path = "files" + request.decode('utf-8').split("\n")[0].split()[1]
