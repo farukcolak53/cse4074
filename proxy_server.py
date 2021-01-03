@@ -56,11 +56,12 @@ def proxy_thread(connection):
 
         # cache
         my_path = "files" + request.decode('utf-8').split("\n")[0].split()[1]
-        with open('cache.txt') as f:
-            if my_path in f.read():  # if the path of the requested file is already in cache.txt
-                functions.generate_response_html((my_path + ".html"), connection, size)
-                connection.close()
-                return
+        if int(size) % 2 == 1:  # If the requested file is odd length, check the cache. Otherwise it is already changed
+            with open('cache.txt') as f:
+                if my_path in f.read():  # if the path of the requested file is already in cache.txt
+                    functions.generate_response_html((my_path + ".html"), connection, size)
+                    connection.close()
+                    return
         # if not found in cache
         s.send(request)  # send request to web server
         while True:
@@ -68,7 +69,7 @@ def proxy_thread(connection):
             data = s.recv(9999)
             data_decoded_split = data.decode('utf-8').split("\n")
             # cache the returned object if it is not in the cache
-            if 'HTTP/1.0 200 OK' in data_decoded_split[0]:
+            if 'HTTP/1.0 200 OK' in data_decoded_split[0] and int(size) % 2 == 1:
                 cache_file = open('cache.txt', 'a+')
                 filepath = "files/" + data_decoded_split[1].split()[1]
                 if filepath not in cache_file.read():
