@@ -5,7 +5,7 @@ import threading
 
 lock = threading.Lock()  # creating thread for every request
 
-valid_methods = ['POST', 'UPDATE', 'DELETE', 'HEAD', 'PUT', 'PATCH']
+valid_methods = ['POST', 'UPDATE', 'DELETE', 'PUT', 'PATCH']
 
 
 def multi_threaded_client(connection):
@@ -34,6 +34,9 @@ def multi_threaded_client(connection):
             if method in valid_methods:
                 filename = "501.html"
                 functions.generate_response_html(filename, connection, 0)
+            elif method == 'HEAD':
+                filename = '501.html'
+                functions.generate_response_for_head(filename, connection)
             else:
                 filename = "400.html"
                 functions.generate_response_html(filename, connection, 0)

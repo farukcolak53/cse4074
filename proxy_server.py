@@ -53,29 +53,25 @@ def proxy_thread(connection):
         request = ("\r\n".join(request_split) + "\r\n\r\n").encode()
         print(request.decode('utf-8'))
 
+        # cache
         my_path = "files" + request.decode('utf-8').split("\n")[0].split()[1]
-        print("burada")
-        print(my_path)
         with open('cache.txt') as f:
             if my_path in f.read():
-                print("nerede")
-                file_input = open(my_path)
-                data = file_input.read()
-                print(data)
-                connection.sendall(data.encode())
+                functions.generate_response_html((my_path + ".html"), connection, size)
                 connection.close()
                 return
-        print("şurada")
+        # if not found in cache
         s.send(request)  # send request to web server
         while True:
-            print("orada")
             # receive data from web server
             data = s.recv(9999)
             data_decoded_split = data.decode('utf-8').split("\n")
+            # cache the returned object if it is not in the cache
             if 'HTTP/1.0 200 OK' in data_decoded_split[0]:
-                cache_file = open('cache.txt', 'a')
+                cache_file = open('cache.txt', 'a+')
                 filepath = "files/" + data_decoded_split[1].split()[1]
-                cache_file.write(filepath + "\n")
+                if filepath not in cache_file.read():
+                    cache_file.write(filepath + "\n")
                 cache_file.close()
             if not data:
                 break
@@ -86,7 +82,6 @@ def proxy_thread(connection):
         if s:
             s.close()
         filename = "404.html"
-        print("patladı")
         functions.generate_response_html(filename, connection, 0)
         return
 

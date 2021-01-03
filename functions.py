@@ -25,7 +25,6 @@ def create_requested_document(size):
 def generate_response_html(filename, connection, size):
     response = ""
     if filename == 'files/' + str(size) + '.html':
-        print(filename)
         file_input = open(filename)
         content = file_input.read()
         response += str('HTTP/1.0 200 OK\r\n')
@@ -57,3 +56,15 @@ def generate_response_html(filename, connection, size):
     response = content
     response_bytes = response.encode()
     connection.sendall(response_bytes)
+
+
+def generate_response_for_head(filename, connection):
+    if filename == '501.html':
+        response = str('HTTP/1.0 501 Not Implemented\r\n')
+        response += str('Content-Length: ' + str(0) + '\r\n')
+        response += str('Content-Type: text/html; charset=UTF-8' + '\r\n\r\n')
+        print("----------------------------")
+        print("---------Response-----------")
+        print(response)
+        print("----------------------------")
+        connection.sendall(response.encode())
