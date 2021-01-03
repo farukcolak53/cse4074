@@ -1,8 +1,8 @@
 # Functions class
 import os
-from sys import getsizeof
 
 
+# Writes the message with the given size of bytes
 def write_message(size):
     text = "a"
     for i in range(size - 84):
@@ -10,6 +10,7 @@ def write_message(size):
     return text
 
 
+# Creates the requested html document with the given valid size of bytes under the files folder
 def create_requested_document(size):
     completeName = os.path.join("files/", str(size) + ".html")
     index_file = open(completeName, "w+")
@@ -22,6 +23,7 @@ def create_requested_document(size):
     return index_file
 
 
+# Generates response html files according to the given request
 def generate_response_html(filename, connection, size):
     response = ""
     if filename == 'files/' + str(size) + '.html':
@@ -46,6 +48,7 @@ def generate_response_html(filename, connection, size):
         response += str('HTTP/1.0 404 Not Found\r\n')
 
     file_input.close()
+    # Creates response headers and sends them
     response += str('Content-Length: ' + str(len(content)) + '\r\n')
     response += str('Content-Type: text/html; charset=UTF-8' + '\r\n\r\n')
     print("----------------------------")
@@ -58,6 +61,7 @@ def generate_response_html(filename, connection, size):
     connection.sendall(response_bytes)
 
 
+# Generates response for head since it needs empty body
 def generate_response_for_head(filename, connection):
     if filename == '501.html':
         response = str('HTTP/1.0 501 Not Implemented\r\n')

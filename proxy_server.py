@@ -1,6 +1,6 @@
-import os
 import socket
 from _thread import *
+
 import functions
 
 
@@ -9,36 +9,33 @@ import functions
 
 def proxy_thread(connection):
     request = connection.recv(9999)
-    if not request:
+    if not request:  # If request is empty, return
         return
     request = request.decode('utf-8')
     request_split = request.split("\n")
 
-    if "favicon.ico" in request_split[0]:
+    if "favicon.ico" in request_split[0]:  # To ignore the meaningless requests
         return
 
-    if "localhost" in request_split[0] or '127.0.0.1' in request_split[0]:
-        method = request_split[0].split()[0]
-        # if method != 'GET':
-        #     return
+    if "localhost" in request_split[0]:
+        method = request_split[0].split()[0]  # Parses the method
         print("----------------------------")
         print("---------Request------------")
         print(request)
         print("----------------------------")
         hostname = "localhost"
-        server_port = request_split[0].split("/")[2].split(":")[1]
-        if server_port == '8080' or server_port == '8888':
+        server_port = request_split[0].split("/")[2].split(":")[1]  # Parses the server port
+        if server_port == '8080' or server_port == '8888':  # If the client requests either to 8080 or 8888, both are directed to the 8080 port (web server)
             server_port = '8080'
-        else:
+        else:  # Other ports
             return
-        size = request_split[0].split("/")[3].split()[0]
-        url = "/" + size
+        size = request_split[0].split("/")[3].split()[0]  # Parses the size
+        url = "/" + size  # Reformat the request
         request_split[0] = method + " " + url + " HTTP/1.1"
     else:
-        # any web server
-        method = request_split[0].split()[0]
-        hostname = request_split[0].split()[1].split(":")[0]
-        server_port = request_split[0].split()[1].split(":")[1]
+        # Any other web server
+        hostname = request_split[0].split()[1].split(":")[0]  # Parses the hostname such as marmara.edu.tr
+        server_port = request_split[0].split()[1].split(":")[1]  # Parses the server port
         size = "0"  # default
 
     try:
@@ -46,17 +43,18 @@ def proxy_thread(connection):
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         s.connect((hostname, int(server_port)))
 
-        if int(size) > 9999:
+        if int(size) > 9999:  # If the requested size is bigger than 9999, create an 414 html response file and return
             filename = "414.html"
             functions.generate_response_html(filename, connection)
             return
-        request = ("\r\n".join(request_split) + "\r\n\r\n").encode()
+        if hostname is 'localhost':
+            request = ("\r\n".join(request_split) + "\r\n\r\n").encode()
         print(request.decode('utf-8'))
 
         # cache
         my_path = "files" + request.decode('utf-8').split("\n")[0].split()[1]
         with open('cache.txt') as f:
-            if my_path in f.read():
+            if my_path in f.read():  # if the path of the requested file is already in cache.txt
                 functions.generate_response_html((my_path + ".html"), connection, size)
                 connection.close()
                 return
@@ -88,7 +86,6 @@ def proxy_thread(connection):
 
 proxy_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 host = '127.0.0.1'
-# port = int(argv[1])
 port = 8888
 
 proxy_thread_num = 0

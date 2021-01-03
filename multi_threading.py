@@ -1,20 +1,21 @@
 import socket
 from _thread import *
+from sys import argv
 import functions
 import threading
 
 lock = threading.Lock()  # creating thread for every request
 
-valid_methods = ['POST', 'UPDATE', 'DELETE', 'PUT', 'PATCH']
+valid_methods = ['POST', 'UPDATE', 'DELETE', 'PUT', 'PATCH']  # Some Valid but Not Implemented Methods
 
 
 def multi_threaded_client(connection):
-    req = connection.recv(1024)  # 10240  byte request received
+    req = connection.recv(1024)  # 1024  byte request received
     request = req.decode('utf-8')
-    if request:
+    if request:  # If request is not empty
         split_words = request.split("\n")
-        method = split_words[0].split()[0]
-        size = split_words[0].split()[1].replace("/", "")
+        method = split_words[0].split()[0]  # Parse the method (GET etc.)
+        size = split_words[0].split()[1].replace("/", "")  # Parse the size of the requested document
 
         print("----------------------------")
         print("---------Request------------")
@@ -30,11 +31,11 @@ def multi_threaded_client(connection):
             else:
                 filename = "400.html"
                 functions.generate_response_html(filename, connection, 0)
-        else:
+        else:  # If the method is not GET or size is not digit
             if method in valid_methods:
                 filename = "501.html"
                 functions.generate_response_html(filename, connection, 0)
-            elif method == 'HEAD':
+            elif method == 'HEAD':  # HEAD needs empty body for valid response
                 filename = '501.html'
                 functions.generate_response_for_head(filename, connection)
             else:
@@ -49,8 +50,7 @@ def multi_threaded_client(connection):
 server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 host = '127.0.0.1'
-# port = int(argv[1])
-port = 8080
+port = int(argv[1])
 
 numOfThread = 0
 
@@ -61,7 +61,7 @@ except socket.error as e:
 
 print('Server socket is listening..')
 
-server_socket.listen(10)  # TODO: what is ?
+server_socket.listen(10)
 
 while True:
     client, address = server_socket.accept()
